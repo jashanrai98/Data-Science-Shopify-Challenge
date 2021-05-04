@@ -1,0 +1,76 @@
+Question 1:
+
+a)	It seems like there are outliers causing the spike in the average order amount. This is most likely happening because some sneakers may have been bought in bulk by other businesses and some sneakers may have been bought directly by the consumer. Since you are only finding the mean of the “order_amount” column, the total number of pairs the customers bought at that price is ignored. The best way to interpret this data is to separate the business to business (B2B) buyers from the direct consumer buyers (B2C). Once they are separated, we can simply add up the total amount of each column and divide it by the number of orders for that column.
+
+b)	I would report an “Average price per order” metric separated for B2B and B2C, as it will give us an accurate representation of the average order value.
+
+c)	The AOV for B2B $704000.00 and the AOV for B2C is $754.09
+
+Code (also in solutions.py):
+
+def find_average_order_value(filename):
+    df = pd.read_csv(filename)
+    order_amount_column = df["order_amount"]
+    order_quantity_column = df["total_items"]
+    i = 0
+    total_consumer_cost = 0
+    total_business_cost = 0
+    number_of_rows_in_consumer_orders = 0
+    number_of_rows_in_business_orders = 0
+    maximum_number_of_sneakers_direct_to_consumer = 10
+    for row in order_quantity_column:
+        if row < maximum_number_of_sneakers_direct_to_consumer:
+            total_consumer_cost = total_consumer_cost + order_amount_column[i]
+            number_of_rows_in_consumer_orders = number_of_rows_in_consumer_orders + 1
+        else:
+            total_business_cost = total_business_cost + order_amount_column[i]
+            number_of_rows_in_business_orders = number_of_rows_in_business_orders + 1
+        i = i + 1
+    print(round((total_consumer_cost / number_of_rows_in_consumer_orders), 2))
+    print(round((total_business_cost / number_of_rows_in_business_orders), 2))
+
+
+
+Question 2:
+
+a) Speedy Express shipped 54 orders
+
+Code: 
+
+SELECT COUNT(o.ShipperID) 
+FROM Orders o
+	JOIN Shippers s
+    	ON o.ShipperID = s.ShipperID
+WHERE s.ShipperName == 'Speedy Express';
+
+b) Last name of the employee with the most orders is PEACOCK
+
+Code:
+
+SELECT e.LastName
+FROM Orders o
+	JOIN Employees e
+    	ON o.EmployeeID = e.EmployeeID
+GROUP BY o.EmployeeID
+ORDER BY COUNT(o.EmployeeID) DESC
+LIMIT 1;
+
+c) Product Name is: Gorgonzola Telino
+
+Code:
+
+SELECT orderDetailsQuery.ProductName
+FROM
+	(SELECT ordDet.ProductID, p.ProductName, ordDet.OrderID
+	FROM OrderDetails ordDet
+    	JOIN Products p
+        	ON ordDet.ProductID = p.ProductID)
+            orderDetailsQuery
+    JOIN Orders o
+    	ON orderDetailsQuery.OrderID = o.OrderID
+    JOIN Customers c
+    	ON o.CustomerID = c.CustomerID
+WHERE c.Country = 'Germany'
+GROUP BY orderDetailsQuery.ProductName
+ORDER BY COUNT(orderDetailsQuery.ProductName) DESC
+LIMIT 1;
